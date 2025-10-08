@@ -1,0 +1,53 @@
+---
+layout: post
+title: "Week 5 Tutorial: Understanding Regression"
+date: 2025-10-08
+categories: [tutorial, data-science]
+tags: [regression, python, pandas, datetime]
+---
+
+## 📘 What Is Regression?
+
+Regression is a predictive modeling technique used to understand the relationship between a dependent variable (target) and one or more independent variables (features). It helps:
+
+- **Identify Relationships**: Linear or non-linear patterns between variables.
+- **Fit Models**: Use mathematical functions to minimize prediction errors.
+- **Make Predictions**: Apply learned relationships to new data.
+- **Evaluate Performance**: Assess accuracy and generalization.
+
+---
+
+## 🧹 Preparing Your Dataset for Regression
+
+Before building a regression model, data preparation is essential:
+
+### 🔍 Data Cleaning
+- Handle missing values (e.g., imputation).
+- Remove duplicates.
+- Correct errors and outliers.
+
+### 🔄 Data Transformation
+- Normalize or standardize features.
+- Encode categorical variables (e.g., one-hot encoding).
+
+### 🧠 Feature Selection & Engineering
+- Remove irrelevant features.
+- Use PCA for dimensionality reduction.
+- Create or transform features to improve model performance.
+
+### 🧪 Splitting the Data
+- Train-test split (e.g., 80/20).
+- Use cross-validation to reduce overfitting.
+
+### 📊 Exploratory Data Analysis (EDA)
+- Visualize distributions and relationships.
+- Check assumptions: linearity, independence, homoscedasticity, normality.
+
+---
+
+## 🧪 Practicing Regression in Python
+
+Here’s a basic regression example using `scikit-learn`:
+
+```python
+from sklearn.linear_model import Linear
