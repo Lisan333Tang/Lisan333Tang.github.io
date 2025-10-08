@@ -1,0 +1,157 @@
+---
+layout: post
+title: "Regression Intuition + Python Date/Time: Clean, Practical Snippets"
+date: 2025-10-08 10:00:00 +1100
+categories: [notes]
+tags: [python, regression, pandas, datetime, tutorial]
+excerpt: "Short, practical notes on what regression does, how to prep data, and when to use datetime vs pandas—with working code you can paste into projects."
+---
+
+> These notes and snippets are adapted from my Week 5 tutorial deck on regression and Python dates/times. fileciteturn0file0
+
+## 1) What a regression model is “doing” (in plain words)
+- Finds a relationship between features (inputs) and a target (output).
+- Fits a function (often a line) that minimises prediction errors.
+- Uses that learned relationship to predict on **new** data.
+- Evaluates how well it generalises via metrics/validation.
+{{ site.hr }}
+
+## 2) Prepping your dataset for regression (checklist)
+- **Collect** relevant data; make sure it represents the problem.
+- **Clean**: handle missing values, drop duplicates, fix types/outliers.
+- **Transform**: scale/standardise where needed; encode categoricals.
+- **Select/Engineer features**: remove noise; add helpful transforms.
+- **Split**: train/validation/test; use cross‑validation to reduce overfitting.
+- **Check assumptions** (for linear models): linearity, independence, homoscedasticity, normal residuals.
+{{ site.hr }}
+
+## 3) Minimal regression you can trust (scikit‑learn)
+
+```python
+# pip install scikit-learn pandas numpy
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score, mean_absolute_error
+
+# Toy dataset
+df = pd.DataFrame({
+    "feature_1": [1,2,3,4,5,6,7,8,9,10],
+    "feature_2": [2,1,2,1,2,1,2,1,2,1],
+    "target":     [2.2,2.9,4.1,5.0,6.1,6.8,8.2,9.1,9.9,11.0],
+})
+
+X = df[["feature_1","feature_2"]]
+y = df["target"]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+pred = model.predict(X_test)
+
+print("Intercept:", model.intercept_)
+print("Coefficients:", dict(zip(X.columns, model.coef_)))
+print("R^2:", r2_score(y_test, pred))
+print("MAE:", mean_absolute_error(y_test, pred))
+```
+
+**Why this snippet?** It mirrors the tutorial’s flow (prep → fit → evaluate) in <30 lines and is easy to swap in your real CSV.
+
+{{ site.hr }}
+
+## 4) Dates & times in Python: `datetime` vs `pandas` (when to use which)
+- **Use `datetime`** for *lightweight, script‑level* time needs (simple diffs, countdowns, logs, system tasks).
+- **Use `pandas`** for *data analysis & time series* (parsing columns, resampling, rolling windows, groupby on time).
+
+### Quick `datetime` wins
+
+```python
+from datetime import datetime, timedelta, time
+
+# 1) Days between two dates
+d1 = datetime(2024, 12, 31)
+d2 = datetime(2025, 10, 8)
+print("Days apart:", (d2 - d1).days)
+
+# 2) Simple countdown (seconds)
+deadline = datetime.now() + timedelta(seconds=10)
+while (remaining := (deadline - datetime.now()).total_seconds()) > 0:
+    pass  # do work / sleep in real code
+print("Done!")
+
+# 3) Next run at 09:00 local *tomorrow*
+now = datetime.now()
+run_at = datetime.combine((now + timedelta(days=1)).date(), time(9, 0))
+print("Next run:", run_at.isoformat())
+```
+
+### Pandas time series essentials
+
+```python
+import pandas as pd
+
+# Parse a date column and set as index
+sales = pd.DataFrame({
+    "date": ["2025-06-01","2025-06-02","2025-06-03","2025-06-04","2025-06-05"],
+    "units": [120, 90, 130, 110, 160],
+})
+sales["date"] = pd.to_datetime(sales["date"])
+sales = sales.set_index("date")
+
+# Resample to weekly totals and 3-day rolling mean
+weekly = sales["units"].resample("W").sum()
+rolling3 = sales["units"].rolling(3, min_periods=1).mean()
+
+print("Weekly totals:\n", weekly)
+print("3-day rolling mean:\n", rolling3)
+```
+
+**Rule of thumb:** if you find yourself doing vectorised ops, indexing by dates, or resampling/rolling, jump to `pandas`.
+
+{{ site.hr }}
+
+## 5) Practical: monthly aggregation from a CSV
+
+```python
+# Example CSV schema:
+# date,category,amount
+# 2025-01-02,food,12.5
+# 2025-01-03,travel,40.0
+# ...
+
+import pandas as pd
+
+df = pd.read_csv("transactions.csv", parse_dates=["date"])
+df = df.set_index("date")
+
+# Monthly spend per category
+monthly = (
+    df.groupby("category")
+      .resample("M")["amount"]
+      .sum()
+      .unstack("category")
+      .fillna(0.0)
+)
+print(monthly.tail())
+
+# Add a 3‑month moving average across *total* spend
+monthly["total"] = monthly.sum(axis=1)
+monthly["total_ma3"] = monthly["total"].rolling(3, min_periods=1).mean()
+print(monthly[["total","total_ma3"]].tail())
+```
+
+This mirrors the tutorial’s emphasis on **time‑based indexing, resampling, and aggregation** for analytics tasks.
+
+{{ site.hr }}
+
+## 6) Takeaways
+- Start any regression with **clean, well‑prepared data** and **honest evaluation**.
+- Pick **`datetime`** for “just scripts”; pick **`pandas`** for “analysis/series”.  
+- Small, tested snippets you understand beat giant frameworks you don’t.
+
+---
+
+**Source:** Week 5 Tutorial — *Understanding Regression* and *Python Date/Time Basics*. fileciteturn0file0
